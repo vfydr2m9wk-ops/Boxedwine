@@ -482,7 +482,11 @@
         missing.sort(comparePreloadCandidates);
 
         var sent = 0;
-        for (var i = 0; i < missing.length && sent < PRELOAD_MODULE_LIMIT; i++) {
+        // Hub: the page can lower how many compiled modules each new worker receives up front
+        // (Module.bwJitPreloadLimit; 0 = none, the worker compiles or receives only what it runs).
+        var limit = typeof Module !== 'undefined' && typeof Module['bwJitPreloadLimit'] === 'number' &&
+            Module['bwJitPreloadLimit'] >= 0 ? Module['bwJitPreloadLimit'] : PRELOAD_MODULE_LIMIT;
+        for (var i = 0; i < missing.length && sent < limit; i++) {
             var entry = missing[i];
             try {
                 if (forcedDeliveryOomIds.has(entry.moduleId)) {
